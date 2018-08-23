@@ -21,7 +21,16 @@ class DumbCharacterController extends WebTestCase
     {
         $client = static::createClient();
 
-        $client->request('GET', '/api/characters/{id}');
+        // test with hardcoded id, not sure about the way to go about it
+        $client->request(
+            'GET',
+            '/api/characters',
+            [ 'id' => 10 ],
+            array(),
+            array(
+                'CONTENT_TYPE' => 'application/json'
+            )
+        );
 
         // test returned status code
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
@@ -43,10 +52,8 @@ class DumbCharacterController extends WebTestCase
     {
         $client = static::createClient();
         $client->request('GET', '/api/characters');
-        $response = $client->getResponse();
-
         // test returned status code
-        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
 
 
         // verifying the headers
@@ -74,9 +81,8 @@ class DumbCharacterController extends WebTestCase
             array('CONTENT_TYPE' => 'application/json'),
             '{"name" : "Summer Smith", "best_quote" : "Okaaay, but not because you told me to."}'
         );
-        $response = $client->getResponse();
 
-        $this->assertEquals(201, $response->getStatusCode());
+        $this->assertEquals(201, $client->getResponse()->getStatusCode());
 
     }
 }
