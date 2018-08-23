@@ -20,7 +20,7 @@ class DumbCharacterController extends AbstractController
         $data = $serializer->serialize($character, 'json',
             SerializationContext::create()->setGroups(['detail']));
 
-        $response = new Response($data);
+        $response = new Response($data, Response::HTTP_OK);
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
@@ -35,7 +35,7 @@ class DumbCharacterController extends AbstractController
         $data = $serializer->serialize($characters, 'json',
             SerializationContext::create()->setGroups(['list']));
 
-        $response = new Response($data);
+        $response = new Response($data, Response::HTTP_OK);
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
@@ -60,6 +60,7 @@ class DumbCharacterController extends AbstractController
         $em->persist($character);
         $em->flush();
 
+        // this will result in code 201, which is the one for resource creation.
         return new Response("", Response::HTTP_CREATED);
     }
 }
