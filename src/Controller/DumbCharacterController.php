@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\DumbCharacter;
+use JMS\Serializer\SerializerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class DumbCharacterController extends AbstractController
+{
+    /**
+     * @Route("/api/characters/{id}", methods="GET", name="get_character")
+     */
+    public function showCharacter(DumbCharacter $character, SerializerInterface $serializer)
+    {
+        $data = $serializer->serialize($character, 'json');
+
+        $response = new Response($data);
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
+    }
+
+    /**
+     * @Route("/api/characters", methods="GET", name="get_characters")
+     */
+    public function showCharacters(SerializerInterface $serializer)
+    {
+        $characters = $this->getDoctrine()->getRepository(DumbCharacter::class)->findAll();
+        $data = $serializer->serialize($characters, 'json');
+
+        $response = new Response($data);
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
+
+    }
+
+    /**
+     * @Route("/api/characters", methods="POST", name="post_characters")
+     */
+    public function createCharacter(Request $request, SerializerInterface $serializer)
+    {
+        // getting the POST request data
+        $data = $request->getContent();
+
+        // Haven't found documentation on how to implement my jms serializer in symfony 4
+        // But I think this is the way to go (?), this way I'm guaaranteed to have either the serialize and deserialize method
+        $character = $serializer->deserialize($data, 'App\Entity\DumbCharacter', 'json');
+        //dump($character); die;
+        // trying to persist the character in the database
+
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($character);
+        $em->flush();
+
+        return new Response("", Response::HTTP_CREATED);
+    }
+}
