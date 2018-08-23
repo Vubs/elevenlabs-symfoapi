@@ -3,9 +3,11 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\DumbCharacterRepository")
+ *
  */
 class DumbCharacter
 {
@@ -13,16 +15,23 @@ class DumbCharacter
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     *
+     * @Serializer\Groups({"list"})
+     *
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @Serializer\Groups({"detail", "list"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @Serializer\Groups({"detail", "list"})
      */
     private $bestQuote;
 

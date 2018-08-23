@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\DumbCharacter;
+use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,7 +17,8 @@ class DumbCharacterController extends AbstractController
      */
     public function showCharacter(DumbCharacter $character, SerializerInterface $serializer)
     {
-        $data = $serializer->serialize($character, 'json');
+        $data = $serializer->serialize($character, 'json',
+            SerializationContext::create()->setGroups(['detail']));
 
         $response = new Response($data);
         $response->headers->set('Content-Type', 'application/json');
@@ -30,7 +32,8 @@ class DumbCharacterController extends AbstractController
     public function showCharacters(SerializerInterface $serializer)
     {
         $characters = $this->getDoctrine()->getRepository(DumbCharacter::class)->findAll();
-        $data = $serializer->serialize($characters, 'json');
+        $data = $serializer->serialize($characters, 'json',
+            SerializationContext::create()->setGroups(['list']));
 
         $response = new Response($data);
         $response->headers->set('Content-Type', 'application/json');
