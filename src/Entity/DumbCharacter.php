@@ -35,6 +35,13 @@ class DumbCharacter
      */
     private $bestQuote;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     *
+     * @Serializer\Groups({"detail", "list"})
+     */
+    private $imageUrl;
+
     public function getId()
     {
         return $this->id;
@@ -60,6 +67,16 @@ class DumbCharacter
     public function setBestQuote($bestQuote)
     {
         $this->bestQuote = $bestQuote;
+
+        return $this;
+    }
+
+    public function getImageUrl() {
+        return $this->imageUrl;
+    }
+
+    public function setImageUrl($imageUrl) {
+        $this->imageUrl = $imageUrl;
 
         return $this;
     }
