@@ -11,9 +11,12 @@ services:
         depends_on:
           - php
 
-    mysql:
-        image: mysql
+    db:
+        image: mysql:5.7
         container_name: sf4_mysql
+        command: mysqld --default-authentication-plugin=mysql_native_password
+        ports:
+          - 3306:3306
         volumes:
             - .docker/data/db:/var/lib/mysql
         environment:
@@ -31,7 +34,7 @@ services:
           - maildev_host=sf4_maildev
         depends_on:
           - maildev
-          - mysql
+          - db
 
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
@@ -39,7 +42,7 @@ services:
         ports:
             - 8080:80
         links:
-            - mysql
+            - db
 
     maildev:
         image: djfarrelly/maildev
