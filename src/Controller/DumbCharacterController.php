@@ -7,24 +7,24 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class DumbCharacterController extends AbstractController
 {
-    /**
-     * @Route("/hello-world")
-     */
-    public function helloWorld()
+    protected $serializer;
+
+    public function __construct(SerializerInterface $serializer)
     {
-        return new Response("Hello world");
+        $this->serializer = $serializer;
     }
 
     /**
      * @Route("/api/characters/{id}", methods="GET", name="get_character")
      */
-    public function showCharacter(DumbCharacter $character, SerializerInterface $serializer)
+    public function showCharacter(DumbCharacter $character)
     {
-        $data = $serializer->serialize($character, 'json',
+        $data = $this->serializer->serialize($character, 'json',
             SerializationContext::create()->setGroups(['detail']));
 
         $response = new Response($data, Response::HTTP_OK);
@@ -36,10 +36,10 @@ class DumbCharacterController extends AbstractController
     /**
      * @Route("/api/characters", methods="GET", name="get_characters")
      */
-    public function showCharacters(SerializerInterface $serializer)
+    public function showCharacters()
     {
         $characters = $this->getDoctrine()->getRepository(DumbCharacter::class)->findAll();
-        $data = $serializer->serialize($characters, 'json',
+        $data = $this->serializer->serialize($characters, 'json',
             SerializationContext::create()->setGroups(['list']));
 
         $response = new Response($data, Response::HTTP_OK);
@@ -52,14 +52,14 @@ class DumbCharacterController extends AbstractController
     /**
      * @Route("/api/characters", methods="POST", name="post_characters")
      */
-    public function createCharacter(Request $request, SerializerInterface $serializer)
+    public function createCharacter(Request $request)
     {
         // getting the POST request data
         $data = $request->getContent();
 
         // Haven't found documentation on how to implement my jms serializer in symfony 4
         // But I think this is the way to go (?), this way I'm guaaranteed to have either the serialize and deserialize method
-        $character = $serializer->deserialize($data, 'App\Entity\DumbCharacter', 'json');
+        $character = $this->serializer->deserialize($data, 'App\Entity\DumbCharacter', 'json');
         //dump($character); die;
         // trying to persist the character in the database
 
@@ -67,7 +67,15 @@ class DumbCharacterController extends AbstractController
         $em->persist($character);
         $em->flush();
 
-        // this will result in code 201, which is the one for resource creation.
-        return new Response("", Response::HTTP_CREATED);
+        $response = new Response();// or I could use JsonResponse, don't know wich is better
+        $response->setContent(json_encode([
+            'resource_id' => $character->getId(),
+            'uri' => $this->generateUrl("get_character", ["id" => $character->getId()])
+        ]));
+        $response->setStatusCode(Response::HTTP_CREATED);
+        $response->headers->set('Content-Type', 'application/json');
+        $response->headers->set('Location', $this->generateUrl("get_character", ["id" => $character->getId()]));
+
+        return $response;
     }
 }
